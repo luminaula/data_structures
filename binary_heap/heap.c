@@ -37,10 +37,13 @@ heap_t *heap_construct(int (*comparator)(const void *, const void *), size_t ele
         heap->data = malloc(heap->capacity * elem_size);
         memcpy(heap->data,data,elem_size * heap->size);
     }
+    if(!heap->size){
+        return heap;
+    }
     heap->head = &((char *)heap->data)[heap->elem_size * heap->size];
-
     size_t max_level = _heap_get_elem_level(heap,heap->head);
     void *iter = _heap_get_loc_up(heap,heap->head);
+
     while(iter >= heap->data){
         _heap_sift_down(heap,iter);
         iter = &((char*)iter)[-heap->elem_size];
@@ -109,7 +112,7 @@ void _heap_sift_up(heap_t *heap, void *cur) {
         return;
     }
     int cmp = heap->comparator(cur, up);
-    if (cmp < 0) {
+    if (cmp > 0) {
         _heap_swap(heap, cur, up);
         _heap_sift_up(heap, up);
     }
@@ -123,12 +126,12 @@ void _heap_sift_down(heap_t *heap, void *cur) {
     }
     void *next = cur;
     int cmp = heap->comparator(down_left, next);
-    if (cmp < 0) {
+    if (cmp > 0) {
         next = down_left;
     }
     if (down_right <= heap->head) {
         cmp = heap->comparator(down_right, next);
-        if (cmp < 0) {
+        if (cmp > 0) {
             next = down_right;
         }
     }
@@ -179,8 +182,8 @@ void heap_sort(int (*comparator)(const void *, const void *),size_t elem_size, v
     heap_t *heap = heap_construct(comparator,elem_size,count,data,1);
     while(heap->data != heap->head){
         _heap_swap(heap,heap->head,heap->data);
-        _heap_sift_down(heap,heap->data);
         heap->head = &((char*)heap->head)[-heap->elem_size];
+        _heap_sift_down(heap,heap->data);
     }
     free(heap);
 }
