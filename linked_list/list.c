@@ -20,18 +20,18 @@ linked_list_t *list_create(size_t elem_size) {
     list->size = 0;
     list->head = NULL;
     list->tail = NULL;
+    return list;
 }
 
-void list_free(linked_list_t *list){
-    if(!list){
+void list_free(linked_list_t *list) {
+    if (!list) {
         return;
     }
-    while(list->head){
+    while (list->size) {
         free(list_pop_front(list));
     }
     free(list);
 }
-
 
 void *_list_node_get_next(size_t node_size, void *node) {
     _node_header_t *header = _list_node_get_header(node_size, node);
@@ -68,11 +68,9 @@ void list_push_back(linked_list_t *list, void *data) {
     void *node = _list_create_node(list->node_size, list->tail, NULL);
     memcpy(node, data, list->elem_size);
 
-    if (!list->tail) {
-        list->tail = node;
+    list->tail = node;
+    if (!list->head) {
         list->head = node;
-    } else {
-        list->tail = node;
     }
 
     list->size++;
@@ -81,17 +79,17 @@ void list_push_back(linked_list_t *list, void *data) {
 void list_push_front(linked_list_t *list, void *data) {
     void *node = _list_create_node(list->node_size, NULL, list->head);
     memcpy(node, data, list->elem_size);
-    if (!list->head) {
-        list->head = node;
+
+    list->head = node;
+    if (!list->tail) {
         list->tail = node;
-    } else {
-        list->head = node;
     }
+
     list->size++;
 }
 
 void *list_pop_front(linked_list_t *list) {
-    if(!list->head){
+    if (!list->head) {
         return NULL;
     }
     void *node = list->head;
@@ -100,23 +98,27 @@ void *list_pop_front(linked_list_t *list) {
     if (next) {
         _node_header_t *next_header = _list_node_get_header(list->node_size, next);
         next_header->prev = NULL;
+    } else {
+        list->tail = NULL;
     }
     list->head = next;
-        
+
     list->size--;
     return node;
 }
 
 void *list_pop_back(linked_list_t *list) {
-    if(!list->tail){
+    if (!list->tail) {
         return NULL;
     }
     void *node = list->tail;
     _node_header_t *header = _list_node_get_header(list->node_size, node);
     void *prev = header->prev;
-    if(prev){
+    if (prev) {
         _node_header_t *prev_header = _list_node_get_header(list->node_size, prev);
         prev_header->next = NULL;
+    } else {
+        list->head = NULL;
     }
     list->tail = prev;
     list->size--;
