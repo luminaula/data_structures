@@ -5,7 +5,6 @@
 
 int g_test_failure = 0;
 
-
 int compare_int_higher(const void *a, const void *b) {
     int _a = *(const int *)a;
     int _b = *(const int *)b;
@@ -37,7 +36,7 @@ void heap_construct_test(size_t size) {
     for (int i = 0; i < size; i++) {
         arr[i] = rand() & size;
     }
-    heap_t *heap = heap_construct(compare_int_lower, sizeof(int),size, arr, 1);
+    heap_t *heap = heap_construct(compare_int_lower, sizeof(int), size, arr, 1);
 
     int *prev = heap_extract(heap);
     if (!prev) {
@@ -46,7 +45,7 @@ void heap_construct_test(size_t size) {
     for (size_t i = 1; i < heap->size; i++) {
         int *val = heap_extract(heap);
         if (!val) {
-            fprintf(stderr,"Heap size error\n");
+            fprintf(stderr, "Heap size error\n");
             g_test_failure = 1;
             exit(EXIT_FAILURE);
         }
@@ -62,41 +61,41 @@ void heap_construct_test(size_t size) {
     heap_free(heap);
 }
 
-void heap_sort_test(size_t size){
-    int (*comparator)(const void *,const void*) = compare_int_lower;
+void heap_sort_test(size_t size) {
+    int (*comparator)(const void *, const void *) = compare_int_lower;
     int *arr = malloc(sizeof(int) * size);
-    for(size_t i=0;i<size; i++){
+    for (size_t i = 0; i < size; i++) {
         arr[i] = rand();
     }
 
-    heap_sort(comparator,sizeof(int),arr,size);
+    heap_sort(comparator, sizeof(int), arr, size);
 
-    for(size_t i= 1; i<size; i++){
-        if(comparator(&arr[i-1],&arr[i]) > 0){
+    for (size_t i = 1; i < size; i++) {
+        if (comparator(&arr[i - 1], &arr[i]) > 0) {
             g_test_failure = 1;
-            fprintf(stderr, "Heap sort error index %lu %d > %d\n",i,arr[i-1],arr[i]);
+            fprintf(stderr, "Heap sort error index %lu %d > %d\n", i, arr[i - 1], arr[i]);
             exit(EXIT_FAILURE);
         }
     }
     free(arr);
 }
 
-void heap_insert_extract_test(size_t size){
-    heap_t *heap = heap_create(compare_int_lower,sizeof(int));
-    for(size_t i = 0; i<size; i++){
+void heap_insert_extract_test(size_t size) {
+    heap_t *heap = heap_create(compare_int_lower, sizeof(int));
+    for (size_t i = 0; i < size; i++) {
         int a = rand() & size;
-        heap_insert(heap,&a);
+        heap_insert(heap, &a);
     }
     int *prev = heap_extract(heap);
-    while(heap->size){
+    while (heap->size) {
         int *a = heap_extract(heap);
-        if(!a){
-            fprintf(stderr,"Heap extract error\n");
+        if (!a) {
+            fprintf(stderr, "Heap extract error\n");
             g_test_failure = 1;
             exit(EXIT_FAILURE);
         }
-        if(heap->comparator(a,prev) > 0){
-            fprintf(stderr, "Heap value error %d > %d\n",*prev, *a);
+        if (heap->comparator(a, prev) > 0) {
+            fprintf(stderr, "Heap value error %d > %d\n", *prev, *a);
             g_test_failure = 1;
             exit(EXIT_FAILURE);
         }
@@ -107,10 +106,7 @@ void heap_insert_extract_test(size_t size){
     heap_free(heap);
 }
 
-
-void at_exit_message(){
-    printf("Heap tests : %s\n", g_test_failure ? "Failed" : "Success");
-}
+void at_exit_message() { printf("Heap tests : %s\n", g_test_failure ? "Failed" : "Success"); }
 
 int main(int argc, char **argv) {
     srand(time(NULL));
@@ -123,6 +119,5 @@ int main(int argc, char **argv) {
         heap_construct_test(test_set_size);
     }
 
-   
     return g_test_failure;
 }

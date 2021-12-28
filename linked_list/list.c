@@ -1,4 +1,5 @@
 #include "list.h"
+#include "ptr_arim.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,15 +18,13 @@ void list_push(linked_list_t *list, void *data) {
     memcpy(node, data, list->elem_size);
 
     if (prev_node) {
-    	void **links = &((char *)node)[list->node_size - sizeof(void *) * 2];
-        void **prev_links = &((char *)prev_node)[list->node_size - sizeof(void *) * 2];
+        void **links = PTR_OFFSET(node, list->node_size - sizeof(void *) * 2);
+        void **prev_links = PTR_OFFSET(prev_node, list->node_size - sizeof(void *) * 2);
         prev_links[1] = node;
-		links[0] = prev_node;
-		list->tail = node;
+        links[0] = prev_node;
+        list->tail = node;
+    } else {
+        list->head = node;
+        list->tail = node;
     }
-	else{
-		list->head = node;
-		list->tail = node;
-	}
-
 }

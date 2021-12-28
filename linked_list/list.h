@@ -3,10 +3,9 @@
 
 #include <stddef.h>
 
-
 typedef struct linked_list_t {
     size_t elem_size;
-	size_t node_size;
+    size_t node_size;
     size_t size;
     void *head, *tail;
 } linked_list_t;
