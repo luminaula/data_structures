@@ -11,12 +11,12 @@ typedef struct heap_t {
     size_t elem_size;
 } heap_t;
 
-heap_t *heap_create(int (*comparator)(const void *, const void *), size_t elem_size);
-heap_t *heap_construct(int (*comparator)(const void *, const void *), size_t elem_size, size_t count, void *data, int in_place);
-void heap_free(heap_t *heap);
-void heap_insert(heap_t *heap, void *data);
-void *heap_extract(heap_t *heap);
-void *heap_peek(heap_t *heap);
+heap_t heap_create(int (*comparator)(const void *, const void *), size_t elem_size);
+heap_t heap_construct(int (*comparator)(const void *, const void *), size_t elem_size, size_t count, void *data, int in_place);
+void heap_free(heap_t heap);
+void heap_insert(heap_t heap, void *data);
+void *heap_extract(heap_t heap);
+void *heap_peek(heap_t heap);
 
 void heap_sort(int (*comparator)(const void *, const void *), size_t elem_size, void *data, size_t count);
 
