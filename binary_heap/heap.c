@@ -30,7 +30,7 @@ heap_t *heap_construct(int (*comparator)(const void *, const void *), size_t ele
     heap->elem_size = elem_size;
     heap->comparator = comparator;
     heap->size = count;
-    heap->capacity = 1l << (64 - _lzcnt_u64(count));
+    heap->capacity = 1l << 64 - _lzcnt_u64(count);
     if (in_place) {
         heap->data = data;
     } else {
@@ -41,7 +41,6 @@ heap_t *heap_construct(int (*comparator)(const void *, const void *), size_t ele
         return heap;
     }
     heap->head = &((char *)heap->data)[heap->elem_size * heap->size];
-    size_t max_level = _heap_get_elem_level(heap,heap->head);
     void *iter = _heap_get_loc_up(heap,heap->head);
 
     while(iter >= heap->data){
@@ -79,7 +78,7 @@ void *_heap_get_level_ptr(heap_t *heap, size_t level) {
     if (!level) {
         return heap->data;
     }
-    return &((char *)heap->data)[(1 << (level - 1)) * heap->elem_size];
+    return &((char *)heap->data)[(1 << level - 1) * heap->elem_size];
 }
 
 void _heap_get_elem_level_index(heap_t *heap, void *elem, size_t *level, size_t *index) {
@@ -92,7 +91,7 @@ void _heap_get_elem_level_index(heap_t *heap, void *elem, size_t *level, size_t 
 void *_heap_get_loc_down(heap_t *heap, void *cur) {
     ptrdiff_t idx = (cur - heap->data) / heap->elem_size * 2;
     void *next = &((char*)heap->data)[idx * heap->elem_size];
-    if(next > heap->head){
+    if(next >= heap->head){
         return NULL;
     }
     return next;

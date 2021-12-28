@@ -2,13 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+int g_test_failure = 0;
+
+
 int compare_int_higher(const void *a, const void *b) {
     int _a = *(const int *)a;
     int _b = *(const int *)b;
 
-    if (_a < _b)
+    if (_a > _b)
         return 1;
-    else if (_a > _b)
+    else if (_a < _b)
         return -1;
     else {
         return 0;
@@ -19,9 +23,9 @@ int compare_int_lower(const void *a, const void *b) {
     int _a = *(const int *)a;
     int _b = *(const int *)b;
 
-    if (_a > _b)
+    if (_a < _b)
         return 1;
-    else if (_a < _b)
+    else if (_a > _b)
         return -1;
     else {
         return 0;
@@ -42,12 +46,14 @@ void heap_construct_test(size_t size) {
     for (size_t i = 1; i < heap->size; i++) {
         int *val = heap_extract(heap);
         if (!val) {
-            printf("Heap size error\n");
-            // _Exit(EXIT_FAILURE);
+            fprintf(stderr,"Heap size error\n");
+            g_test_failure = 1;
+            exit(EXIT_FAILURE);
         }
         if (heap->comparator(val, prev) > 0) {
-            printf("Heap value error %d > %d\n", *val, *prev);
-            // _Exit(EXIT_FAILURE);
+            fprintf(stderr, "Heap value error %d > %d\n", *val, *prev);
+            g_test_failure = 1;
+            exit(EXIT_FAILURE);
         }
         *prev = *val;
         free(val);
@@ -67,7 +73,9 @@ void heap_sort_test(size_t size){
 
     for(size_t i= 1; i<size; i++){
         if(comparator(&arr[i-1],&arr[i]) > 0){
-            printf("Heap sort error index %lu %d > %d\n",i,arr[i-1],arr[i]);
+            g_test_failure = 1;
+            fprintf(stderr, "Heap sort error index %lu %d > %d\n",i,arr[i-1],arr[i]);
+            exit(EXIT_FAILURE);
         }
     }
     free(arr);
@@ -83,10 +91,14 @@ void heap_insert_extract_test(size_t size){
     while(heap->size){
         int *a = heap_extract(heap);
         if(!a){
-            break;
+            fprintf(stderr,"Heap extract error\n");
+            g_test_failure = 1;
+            exit(EXIT_FAILURE);
         }
         if(heap->comparator(a,prev) > 0){
-            printf("Heap insert error %d > %d\n",*prev, *a);
+            fprintf(stderr, "Heap value error %d > %d\n",*prev, *a);
+            g_test_failure = 1;
+            exit(EXIT_FAILURE);
         }
         *prev = *a;
         free(a);
@@ -95,15 +107,22 @@ void heap_insert_extract_test(size_t size){
     heap_free(heap);
 }
 
+
+void at_exit_message(){
+    printf("Heap tests : %s\n", g_test_failure ? "Failed" : "Success");
+}
+
 int main(int argc, char **argv) {
     srand(time(NULL));
     size_t test_set_size = 0xffff;
+    atexit(at_exit_message);
 
-    for (size_t i = 0; i < 10; i++) {
+    for (size_t i = 0; i < 100; i++) {
         heap_sort_test(test_set_size);
         heap_insert_extract_test(test_set_size);
         heap_construct_test(test_set_size);
     }
-    
-    return EXIT_SUCCESS;
+
+   
+    return g_test_failure;
 }
