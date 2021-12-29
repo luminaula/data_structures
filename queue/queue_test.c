@@ -3,7 +3,7 @@
 #include "queue.h"
 int main(int argc, char** argv){
 	queue_t *queue = queue_create(sizeof(int));
-	for(int i=0;i<70;i++){
+	for(int i=0;i<7000;i++){
 		queue_push(queue,&i);
 	}
 	for(int i=0;i<900;i++){
@@ -14,5 +14,6 @@ int main(int argc, char** argv){
 		}
 	}
 	printf("\n");
+	queue_free(queue);
 	return EXIT_SUCCESS;
 }

@@ -24,6 +24,17 @@ queue_t *queue_create(size_t elem_size) {
     return queue;
 }
 
+void queue_free(queue_t *queue){
+    if(!queue){
+        return;
+    }
+    while(queue->read_chunk){
+        void *next = list_node_get_next(queue->chunk_size + list_header_size(), queue->read_chunk);
+        free(queue->read_chunk);
+        queue->read_chunk = next;
+    }
+    free(queue);
+}
 
 
 void queue_push(queue_t *queue, void *data) {
