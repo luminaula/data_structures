@@ -120,7 +120,6 @@ int main(int argc, char **argv) {
         heap_sort_test(i);
         heap_insert_extract_test(i);
         heap_construct_test(i);
-
     }
 
     return g_test_failure;

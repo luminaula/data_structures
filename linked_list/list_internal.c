@@ -36,3 +36,5 @@ void list_link_node(size_t node_size, void *node, void *prev, void *next) {
         node_header->next = next;
     }
 }
+
+size_t list_header_size() { return sizeof(node_header_t); }

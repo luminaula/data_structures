@@ -1,11 +1,9 @@
 #include "heap.h"
+#include "heap_internal.h"
 #include "ptr_arim.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "heap_internal.h"
-
-
 
 heap_t heap_create(int (*comparator)(const void *, const void *), size_t elem_size) {
     heap_t heap;
@@ -35,7 +33,7 @@ heap_t heap_construct(int (*comparator)(const void *, const void *), size_t elem
         return heap;
     }
     heap.head = PTR_OFFSET(heap.data, heap.elem_size * heap.size);
-    void *iter = heap_get_loc_up(heap,heap.head);
+    void *iter = heap_get_loc_up(heap, heap.head);
 
     while (iter >= heap.data) {
         heap_sift_down(heap, iter);
@@ -49,8 +47,6 @@ void heap_free(heap_t heap) {
         free(heap.data);
     }
 }
-
-
 
 void heap_insert(heap_t heap, void *data) {
     if (heap.size == heap.capacity) {

@@ -1,10 +1,10 @@
 #include "heap_internal.h"
 #include "heap.h"
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include "ptr_arim.h"
 #include <immintrin.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 void heap_swap(heap_t heap, void *a, void *b) {
     char buffer[heap.elem_size];

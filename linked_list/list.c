@@ -1,9 +1,8 @@
 #include "list.h"
+#include "list_internal.h"
 #include "ptr_arim.h"
 #include <stdlib.h>
 #include <string.h>
-#include "list_internal.h"
-
 
 linked_list_t *list_create(size_t elem_size) {
     linked_list_t *list = malloc(sizeof(linked_list_t));
@@ -24,8 +23,6 @@ void list_free(linked_list_t *list) {
     }
     free(list);
 }
-
-
 
 void list_push_back(linked_list_t *list, void *data) {
     void *node = list_create_node(list->node_size, list->tail, NULL);
@@ -90,4 +87,4 @@ void *list_pop_back(linked_list_t *list) {
     return node;
 }
 
-size_t list_header_size() { return sizeof(node_header_t); }
+
