@@ -1,19 +1,11 @@
 #include "heap.h"
 #include "ptr_arim.h"
-#include <immintrin.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "heap_internal.h"
 
-void _heap_swap(heap_t heap, void *a, void *b);
-size_t _heap_get_elem_level(heap_t heap, void *elem);
-void *_heap_get_level_ptr(heap_t heap, size_t level);
-void _heap_get_elem_level_index(heap_t heap, void *elem, size_t *level, size_t *index);
-void *_heap_get_loc_down(heap_t heap, void *cur);
-void *_heap_get_loc_up(heap_t heap, void *cur);
-void _heap_sift_up(heap_t heap, void *cur);
-void _heap_sift_down(heap_t heap, void *cur);
+
 
 heap_t heap_create(int (*comparator)(const void *, const void *), size_t elem_size) {
     heap_t heap;
@@ -43,10 +35,10 @@ heap_t heap_construct(int (*comparator)(const void *, const void *), size_t elem
         return heap;
     }
     heap.head = PTR_OFFSET(heap.data, heap.elem_size * heap.size);
-    void *iter = _heap_get_loc_up(heap,heap.head);
+    void *iter = heap_get_loc_up(heap,heap.head);
 
     while (iter >= heap.data) {
-        _heap_sift_down(heap, iter);
+        heap_sift_down(heap, iter);
         PTR_ADVANCE(iter, -heap.elem_size);
     }
     return heap;
@@ -58,84 +50,7 @@ void heap_free(heap_t heap) {
     }
 }
 
-void _heap_swap(heap_t heap, void *a, void *b) {
-    char buffer[heap.elem_size];
-    memcpy(buffer, a, heap.elem_size);
-    memcpy(a, b, heap.elem_size);
-    memcpy(b, buffer, heap.elem_size);
-}
 
-size_t _heap_get_elem_level(heap_t heap, void *elem) {
-    ptrdiff_t diff = (uintptr_t)elem - (uintptr_t)heap.data;
-    size_t idx = diff / heap.elem_size;
-    return 64 - _lzcnt_u64(idx);
-}
-
-void *_heap_get_level_ptr(heap_t heap, size_t level) {
-    if (!level) {
-        return heap.data;
-    }
-    return PTR_OFFSET(heap.data, (1 << level - 1) * heap.elem_size);
-}
-
-void _heap_get_elem_level_index(heap_t heap, void *elem, size_t *level, size_t *index) {
-    *level = _heap_get_elem_level(heap, elem);
-    void *cur_level = _heap_get_level_ptr(heap, *level);
-    ptrdiff_t diff = (uintptr_t)elem - (uintptr_t)cur_level;
-    *index = diff / heap.elem_size;
-}
-
-void *_heap_get_loc_down(heap_t heap, void *cur) {
-    ptrdiff_t idx = (cur - heap.data) / heap.elem_size * 2;
-    void *next = PTR_OFFSET(heap.data, idx * heap.elem_size);
-    if (next >= heap.head) {
-        return NULL;
-    }
-    return next;
-}
-
-void *_heap_get_loc_up(heap_t heap, void *cur) {
-    if (cur <= heap.data) {
-        return NULL;
-    }
-    ptrdiff_t idx = (cur - heap.data) / heap.elem_size / 2;
-    return PTR_OFFSET(heap.data, idx * heap.elem_size);
-}
-
-void _heap_sift_up(heap_t heap, void *cur) {
-    void *up = _heap_get_loc_up(heap, cur);
-    if (!up) {
-        return;
-    }
-    int cmp = heap.comparator(cur, up);
-    if (cmp > 0) {
-        _heap_swap(heap, cur, up);
-        _heap_sift_up(heap, up);
-    }
-}
-
-void _heap_sift_down(heap_t heap, void *cur) {
-    void *down_left = _heap_get_loc_down(heap, cur);
-    void *down_right = PTR_OFFSET(down_left, heap.elem_size);
-    if (!down_left) {
-        return;
-    }
-    void *next = cur;
-    int cmp = heap.comparator(down_left, next);
-    if (cmp > 0) {
-        next = down_left;
-    }
-    if (down_right < heap.head) {
-        cmp = heap.comparator(down_right, next);
-        if (cmp > 0) {
-            next = down_right;
-        }
-    }
-    if (next != cur) {
-        _heap_swap(heap, next, cur);
-        _heap_sift_down(heap, next);
-    }
-}
 
 void heap_insert(heap_t heap, void *data) {
     if (heap.size == heap.capacity) {
@@ -145,7 +60,7 @@ void heap_insert(heap_t heap, void *data) {
     }
 
     memcpy(heap.head, data, heap.elem_size);
-    _heap_sift_up(heap, heap.head);
+    heap_sift_up(heap, heap.head);
     PTR_ADVANCE(heap.head, heap.elem_size);
     heap.size++;
 }
@@ -161,7 +76,7 @@ void *heap_extract(heap_t heap) {
     memcpy(heap.data, heap.head, heap.elem_size);
 
     --heap.size;
-    _heap_sift_down(heap, heap.data);
+    heap_sift_down(heap, heap.data);
     return data;
 }
 
@@ -178,7 +93,7 @@ void heap_sort(int (*comparator)(const void *, const void *), size_t elem_size, 
     heap_t heap = heap_construct(comparator, elem_size, count, data, 1);
     while (heap.data < heap.head) {
         PTR_ADVANCE(heap.head, -heap.elem_size);
-        _heap_swap(heap, heap.head, heap.data);
-        _heap_sift_down(heap, heap.data);
+        heap_swap(heap, heap.head, heap.data);
+        heap_sift_down(heap, heap.data);
     }
 }

@@ -2,16 +2,8 @@
 #include "ptr_arim.h"
 #include <stdlib.h>
 #include <string.h>
+#include "list_internal.h"
 
-typedef struct _node_header_t {
-    void *prev;
-    void *next;
-} _node_header_t;
-
-void *_list_node_get_next(size_t node_size, void *node);
-void *_list_node_get_prev(size_t node_size, void *node);
-void *_list_create_node(size_t node_size, void *prev, void *next);
-_node_header_t *_list_node_get_header(size_t node_size, void *node);
 
 linked_list_t *list_create(size_t elem_size) {
     linked_list_t *list = malloc(sizeof(linked_list_t));
@@ -33,39 +25,10 @@ void list_free(linked_list_t *list) {
     free(list);
 }
 
-void *_list_node_get_next(size_t node_size, void *node) {
-    _node_header_t *header = _list_node_get_header(node_size, node);
-    return header->next;
-}
 
-void *_list_node_get_prev(size_t node_size, void *node) {
-    _node_header_t *header = _list_node_get_header(node_size, node);
-    return header->prev;
-}
-
-_node_header_t *_list_node_get_header(size_t node_size, void *node) {
-    return (_node_header_t *)PTR_OFFSET(node, node_size - sizeof(_node_header_t));
-}
-
-void *_list_create_node(size_t node_size, void *prev, void *next) {
-    void *node = calloc(1, node_size);
-    _node_header_t *node_header = _list_node_get_header(node_size, node);
-
-    if (prev) {
-        _node_header_t *prev_header = _list_node_get_header(node_size, prev);
-        prev_header->next = node;
-        node_header->prev = prev;
-    }
-    if (next) {
-        _node_header_t *next_header = _list_node_get_header(node_size, next);
-        next_header->prev = node;
-        node_header->next = next;
-    }
-    return node;
-}
 
 void list_push_back(linked_list_t *list, void *data) {
-    void *node = _list_create_node(list->node_size, list->tail, NULL);
+    void *node = list_create_node(list->node_size, list->tail, NULL);
     memcpy(node, data, list->elem_size);
 
     list->tail = node;
@@ -76,8 +39,12 @@ void list_push_back(linked_list_t *list, void *data) {
     list->size++;
 }
 
+void list_move_back(linked_list_t *list, void *data) { list_link_node(list->node_size, data, list->tail, NULL); }
+
+void list_move_front(linked_list_t *list, void *data) { list_link_node(list->node_size, data, NULL, list->head); }
+
 void list_push_front(linked_list_t *list, void *data) {
-    void *node = _list_create_node(list->node_size, NULL, list->head);
+    void *node = list_create_node(list->node_size, NULL, list->head);
     memcpy(node, data, list->elem_size);
 
     list->head = node;
@@ -93,10 +60,9 @@ void *list_pop_front(linked_list_t *list) {
         return NULL;
     }
     void *node = list->head;
-    _node_header_t *header = _list_node_get_header(list->node_size, node);
-    void *next = header->next;
+    void *next = list_node_get_next(list->node_size, node);
     if (next) {
-        _node_header_t *next_header = _list_node_get_header(list->node_size, next);
+        node_header_t *next_header = list_node_get_header(list->node_size, next);
         next_header->prev = NULL;
     } else {
         list->tail = NULL;
@@ -112,10 +78,9 @@ void *list_pop_back(linked_list_t *list) {
         return NULL;
     }
     void *node = list->tail;
-    _node_header_t *header = _list_node_get_header(list->node_size, node);
-    void *prev = header->prev;
+    void *prev = list_node_get_prev(list->node_size, node);
     if (prev) {
-        _node_header_t *prev_header = _list_node_get_header(list->node_size, prev);
+        node_header_t *prev_header = list_node_get_header(list->node_size, prev);
         prev_header->next = NULL;
     } else {
         list->head = NULL;
@@ -124,3 +89,5 @@ void *list_pop_back(linked_list_t *list) {
     list->size--;
     return node;
 }
+
+size_t list_header_size() { return sizeof(node_header_t); }
