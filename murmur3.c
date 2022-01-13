@@ -4,16 +4,16 @@
 // MurmurHash3 was written by Austin Appleby, and is placed in the public
 // domain. The author hereby disclaims copyright to this source code.
 
-inline uint32_t getblock32 ( const uint32_t * p, int i )
+ uint32_t getblock32 ( const uint32_t * p, int i )
 {
   return p[i];
 }
 
-inline uint32_t rotl32(uint32_t x, int8_t r) { return (x << r) | (x >> (32 - r)); }
+ uint32_t rotl32(uint32_t x, int8_t r) { return (x << r) | (x >> (32 - r)); }
 
-inline uint64_t rotl64(uint64_t x, int8_t r) { return (x << r) | (x >> (64 - r)); }
+ uint64_t rotl64(uint64_t x, int8_t r) { return (x << r) | (x >> (64 - r)); }
 
-inline uint32_t fmix32(uint32_t h) {
+ uint32_t fmix32(uint32_t h) {
     h ^= h >> 16;
     h *= 0x85ebca6b;
     h ^= h >> 13;
@@ -59,8 +59,10 @@ void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out) {
     switch (len & 3) {
     case 3:
         k1 ^= tail[2] << 16;
+        __attribute__ ((fallthrough));
     case 2:
         k1 ^= tail[1] << 8;
+        __attribute__ ((fallthrough));
     case 1:
         k1 ^= tail[0];
         k1 *= c1;
